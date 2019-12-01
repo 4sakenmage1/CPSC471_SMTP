@@ -10,11 +10,10 @@ endmsg = "\r\n.\r\n"
 username = "tempUserCPSC471@gmail.com"
 password = "pswd1!@#"
 
-# Choose a mail server (e.g. Google mail server) and call it mailserver
-#Fill in start
-mailserver = ("smtp.gmail.com", 587)
+ToUser = "sami.halwani1@gmail.com"
 
-# #Fill in end
+# Choose a mail server (e.g. Google mail server) and call it mailserver
+mailserver = ("smtp.gmail.com", 587)
 
 
 # Create socket called clientSocket and establish a TCP connection with mailserver
@@ -39,54 +38,57 @@ if recv1[:3] != '250':
     print('250 reply not received from server.')
 
 
+#Start TLS connection
+TLS = "STARTTLS\r\n"
+clientSocket.sendall(TLS.encode())
+recvTLS = clientSocket.recv(1024)
+print(f"StartTLS Response: {recvTLS.decode()}")
 
-base64_str = ("\x00"+username+"\x00"+password).encode()
-base64_str = base64.b64encode(base64_str)
-authMsg = "AUTH PLAIN ".encode()+base64_str+"\r\n".encode()
-clientSocket.send(authMsg)
-recv_auth = clientSocket.recv(1024)
-print(recv_auth.decode())
-if recv1[:3] != '250':
-    print('250 reply not received from server.')
+#ssl
+clientSocketSSL = ssl.wrap_socket(clientSocket)
+
+#Authorize User Credentials
+userAuth = "AUTH LOGIN\r\n"
+clientSocketSSL.sendall(userAuth.encode())
+recvUserAuth = clientSocketSSL.recv(1024).decode()
+print(f"AUTH LOGIN Reponse: {recvUserAuth}")
+
+EnUsername = base64.b64encode(username.encode())
+clientSocketSSL.sendall(EnUsername + "\r\n".encode())
+recvUserAuth2 = clientSocketSSL.recv(1024).decode()
+print(f"Username Authorization Response: {recvUserAuth2}")
+
+EnPassword = base64.b64encode(password.encode())
+clientSocketSSL.sendall(EnPassword + "\r\n".encode())
+recvPassAuth = clientSocketSSL.recv(1024).decode()
+print(f"Username Authorization Response: {recvPassAuth}")
 
 
 # Send MAIL FROM command and print server response.
-mailFrom = "MAIL FROM: <anyemailid@gmail.com> \r\n"
-clientSocket.send(mailFrom.encode())
-recv2 = clientSocket.recv(1024)
-print("After MAIL FROM command: "+recv2)
-if recv1[:3] != '250':
-    print('250 reply not received from server.')
+mailFrom = "MAIL FROM: <{username}> \r\n"
+clientSocketSSL.sendall(mailFrom.encode())
+recvMailReponse = clientSocketSSL.recv(1024).decode()
+print(f"MAIL FROM response: {recvMailReponse}")
+
+
 
 # Send RCPT TO command and print server response.
-rcptTo = "RCPT TO: <destination@gmail.com> \r\n"
-clientSocket.send(rcptTo.encode())
-recv3 = clientSocket.recv(1024)
-print("After RCPT TO command: "+recv3)
-if recv1[:3] != '250':
-    print('250 reply not received from server.')
+rcptTo = "RCPT TO: <sami.halwani1@gmail.com> \r\n"
+clientSocketSSL.sendall(rcptTo.encode())
+recvRCPT = clientSocketSSL.recv(1024).decode()
+print(f" RCPT TO: {recvRCPT}")
+
 
 # Send DATA command and print server response.
 data = "DATA\r\n"
-clientSocket.send(data.encode())
-recv4 = clientSocket.recv(1024)
-print("After DATA command: "+recv4)
-if recv1[:3] != '250':
-    print('250 reply not received from server.')
+clientSocketSSL.sendall(data.encode())
+clientSocketSSL.sendall(f"{msg}{endmsg}".encode())
+recvData = clientSocketSSL.recv(1024).decode()
+print(f"DATA Reponse: {recvData}")
 
-# Send message data.
-subject = "Subject: SMTP mail client testing \r\n\r\n"
-clientSocket.send(subject.encode())
-message = input("Enter your message: \r\n")
-clientSocket.send(message.encode())
-clientSocket.send(endmsg.encode())
-recv_msg = clientSocket.recv(1024)
-print("Response after sending message body:"+recv_msg.decode())
-if recv1[:3] != '250':
-    print('250 reply not received from server.')
 
 # Send QUIT command and get server response.
-clientSocket.send("QUIT\r\n".encode())
-message=clientSocket.recv(1024)
-print (message)
+clientSocketSSL.sendall("QUIT \r\n".encode())
+recvQuit = clientSocketSSL.recv(1024).decode()
+print(f"QUIT: {recvQuit}")
 clientSocket.close()

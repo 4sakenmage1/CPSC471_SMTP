@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venvv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (CPSC471_SMTP)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (CPSC483_Inclass_11_21_2019)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
